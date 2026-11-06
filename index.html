@@ -1,0 +1,120 @@
+
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+
+  <title>PinShelf Widget</title>
+
+  <style>
+    * {
+      box-sizing: border-box;
+    }
+
+    body {
+      margin: 0;
+      padding: 4px;
+      font-family: Arial, sans-serif;
+      background: white;
+    }
+
+    #status {
+      padding: 10px;
+      color: #666;
+      font-size: 13px;
+    }
+
+    #board-container {
+      width: 100%;
+      min-height: 400px;
+      overflow-y: auto;
+      overflow-x: hidden;
+    }
+
+    #board {
+      width: 100%;
+    }
+  </style>
+</head>
+
+<body>
+
+  <div id="status">Loading Pinterest board...</div>
+
+  <div id="board-container">
+    <div id="board"></div>
+  </div>
+
+  <script>
+    const params = new URLSearchParams(
+      window.location.search
+    );
+
+    const boardUrl = params.get("board");
+
+    const status = document.getElementById("status");
+    const board = document.getElementById("board");
+
+    function validateBoardUrl(value) {
+      const url = new URL(value);
+
+      const allowedHosts = [
+        "pinterest.com",
+        "www.pinterest.com",
+        "in.pinterest.com"
+      ];
+
+      const parts = url.pathname.split("/").filter(Boolean);
+
+      if (
+        url.protocol !== "https:" ||
+        !allowedHosts.includes(url.hostname) ||
+        parts.length !== 2
+      ) {
+        throw new Error("Invalid Pinterest board URL.");
+      }
+
+      return `https://www.pinterest.com/${parts[0]}/${parts[1]}/`;
+    }
+
+    try {
+      if (!boardUrl) {
+        throw new Error("No Pinterest board URL provided.");
+      }
+
+      const cleanUrl = validateBoardUrl(boardUrl);
+
+      const link = document.createElement("a");
+
+      link.href = cleanUrl;
+      link.setAttribute("data-pin-do", "embedBoard");
+      link.setAttribute("data-pin-board-width", "300");
+      link.setAttribute("data-pin-scale-height", "600");
+      link.setAttribute("data-pin-scale-width", "240");
+
+      board.appendChild(link);
+
+      const script = document.createElement("script");
+
+      script.src = "https://assets.pinterest.com/js/pinit.js";
+      script.async = true;
+      script.defer = true;
+
+      script.onload = () => {
+        status.textContent = "Pinterest widget loaded.";
+      };
+
+      script.onerror = () => {
+        status.textContent = "Could not load Pinterest widget.";
+      };
+
+      document.body.appendChild(script);
+
+    } catch (error) {
+      status.textContent = error.message;
+    }
+  </script>
+
+</body>
+</html>
