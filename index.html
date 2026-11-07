@@ -1,6 +1,6 @@
 
 <!DOCTYPE html>
-<html>
+<html lang="en">
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
@@ -12,11 +12,18 @@
       box-sizing: border-box;
     }
 
+    html,
     body {
       margin: 0;
-      padding: 4px;
+      padding: 0;
+      width: 100%;
+      min-height: 100%;
       font-family: Arial, sans-serif;
       background: white;
+    }
+
+    body {
+      padding: 4px;
     }
 
     #status {
@@ -32,7 +39,6 @@
       overflow-x: hidden;
     }
 
-    /* Match the board sizing used in our successful standalone test. */
     #board {
       width: 320px;
       max-width: 100%;
@@ -49,10 +55,9 @@
     <div id="board"></div>
   </div>
 
+  <!-- Configure the widget before loading Pinterest's script -->
   <script>
-    const params = new URLSearchParams(
-      window.location.search
-    );
+    const params = new URLSearchParams(window.location.search);
 
     const boardUrl = params.get("board");
     const requestedLayout = params.get("layout") || "3";
@@ -60,14 +65,19 @@
     const status = document.getElementById("status");
     const board = document.getElementById("board");
 
+    // Layout settings established during our standalone tests.
     const layoutWidths = {
       "1": 190,
       "2": 120,
       "3": 92
     };
 
-    const thumbnailWidth =
-      layoutWidths[requestedLayout] || layoutWidths["3"];
+    const selectedLayout = Object.prototype.hasOwnProperty.call(
+      layoutWidths,
+      requestedLayout
+    ) ? requestedLayout : "3";
+
+    const thumbnailWidth = layoutWidths[selectedLayout];
 
     function validateBoardUrl(value) {
       let url;
@@ -104,41 +114,39 @@
 
       const cleanUrl = validateBoardUrl(boardUrl);
 
+      // Create the Pinterest board embed.
       const link = document.createElement("a");
 
       link.href = cleanUrl;
       link.setAttribute("data-pin-do", "embedBoard");
+
       link.setAttribute("data-pin-board-width", "320");
       link.setAttribute("data-pin-scale-height", "600");
-      link.setAttribute("data-pin-scale-width", String(thumbnailWidth));
+      link.setAttribute(
+        "data-pin-scale-width",
+        String(thumbnailWidth)
+      );
 
       board.appendChild(link);
 
-      const script = document.createElement("script");
-
-      script.src = "https://assets.pinterest.com/js/pinit.js";
-      script.async = true;
-      script.defer = true;
-
-      script.onload = () => {
-        const layout = layoutWidths[requestedLayout]
-          ? requestedLayout
-          : "3";
-
-        status.textContent =
-          `Pinterest widget loaded · ${layout} column layout`;
-      };
-
-      script.onerror = () => {
-        status.textContent = "Could not load Pinterest widget.";
-      };
-
-      document.body.appendChild(script);
+      status.textContent =
+        "Loading Pinterest board · " +
+        selectedLayout +
+        " column layout...";
 
     } catch (error) {
       status.textContent = error.message;
     }
   </script>
+
+  <!-- Load Pinterest only after the embed has been configured -->
+  <script
+    async
+    defer
+    src="https://assets.pinterest.com/js/pinit.js"
+    onload="document.getElementById('status').textContent = 'Pinterest script loaded.';"
+    onerror="document.getElementById('status').textContent = 'Could not load Pinterest widget.';"
+  ></script>
 
 </body>
 </html>
