@@ -32,8 +32,11 @@
       overflow-x: hidden;
     }
 
+    /* Match the board sizing used in our successful standalone test. */
     #board {
-      width: 100%;
+      width: 320px;
+      max-width: 100%;
+      margin: 0 auto;
     }
   </style>
 </head>
@@ -57,7 +60,6 @@
     const status = document.getElementById("status");
     const board = document.getElementById("board");
 
-    // Map PinShelf layout choices to tested Pinterest thumbnail widths.
     const layoutWidths = {
       "1": 190,
       "2": 120,
