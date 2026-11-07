@@ -52,12 +52,29 @@
     );
 
     const boardUrl = params.get("board");
+    const requestedLayout = params.get("layout") || "3";
 
     const status = document.getElementById("status");
     const board = document.getElementById("board");
 
+    // Map PinShelf layout choices to tested Pinterest thumbnail widths.
+    const layoutWidths = {
+      "1": 190,
+      "2": 120,
+      "3": 92
+    };
+
+    const thumbnailWidth =
+      layoutWidths[requestedLayout] || layoutWidths["3"];
+
     function validateBoardUrl(value) {
-      const url = new URL(value);
+      let url;
+
+      try {
+        url = new URL(value);
+      } catch {
+        throw new Error("Invalid Pinterest board URL.");
+      }
 
       const allowedHosts = [
         "pinterest.com",
@@ -89,9 +106,9 @@
 
       link.href = cleanUrl;
       link.setAttribute("data-pin-do", "embedBoard");
-      link.setAttribute("data-pin-board-width", "300");
+      link.setAttribute("data-pin-board-width", "320");
       link.setAttribute("data-pin-scale-height", "600");
-      link.setAttribute("data-pin-scale-width", "240");
+      link.setAttribute("data-pin-scale-width", String(thumbnailWidth));
 
       board.appendChild(link);
 
@@ -102,7 +119,12 @@
       script.defer = true;
 
       script.onload = () => {
-        status.textContent = "Pinterest widget loaded.";
+        const layout = layoutWidths[requestedLayout]
+          ? requestedLayout
+          : "3";
+
+        status.textContent =
+          `Pinterest widget loaded · ${layout} column layout`;
       };
 
       script.onerror = () => {
